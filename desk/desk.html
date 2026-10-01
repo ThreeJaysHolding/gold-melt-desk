@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Gold Melt Desk</title>
+<style>
+  body { margin: 0; background: #0f1419; color: #e8eef4; font-family: system-ui, sans-serif; }
+  header, section { padding: 16px; }
+  header { background: #1b2838; }
+  input, select { width: 100%; box-sizing: border-box; padding: 10px; margin: 6px 0 12px; }
+  button { width: 100%; padding: 14px; border: 0; background: #3d8bfd; color: #fff; font-weight: 700; }
+  .buy { color: #3ddc84; } .watch { color: #ffd166; } .skip { color: #ff6b6b; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Gold Melt Desk</h1>
+  <div>Champion v1. Spot $4,280.69/oz as of 24 Sep 2026. Calculator only. Does not scrape or bid.</div>
+</header>
+<section>
+  <label>Gross grams</label><input id="g" type="number" step="0.01" value="13">
+  <label>Karat</label>
+  <select id="k"><option>14K</option><option>10K</option><option>18K</option><option>22K</option><option>24K</option></select>
+  <label>Construction c</label><input id="c" type="number" step="0.01" value="0.75">
+  <label>Dead fraction</label><input id="d" type="number" step="0.01" value="0">
+  <label>Premium</label><input id="p" type="number" step="0.01" value="0.25">
+  <label>Hammer now</label><input id="h" type="number" step="1" value="275">
+  <button onclick="run()">Calculate max hammer</button>
+  <div id="out"></div>
+</section>
+<script>
+const SPOT_OZ = 4280.69, TROY = 31.1034768;
+const F = { "10K":10/24,"14K":14/24,"18K":18/24,"22K":22/24,"24K":0.999 };
+function run(){
+  const g=+document.getElementById('g').value||0;
+  const k=document.getElementById('k').value;
+  const c=+document.getElementById('c').value||0;
+  const d=+document.getElementById('d').value||0;
+  const prem=+document.getElementById('p').value||0;
+  const ham=+document.getElementById('h').value||0;
+  const fine=g*(F[k]||0)*(1-d)*c;
+  const melt=fine*(SPOT_OZ/TROY);
+  const net=melt*0.95-25;
+  const max=Math.max(0,(net-25-25)/(1+prem));
+  const landed=ham*(1+prem)+25;
+  const edge=net-landed;
+  const pct=landed?edge/landed:0;
+  let dec="SKIP", cls="skip";
+  if(c===0){dec="SKIP";}
+  else if(pct>=0.12){dec="BUY"; cls="buy";}
+  else if(pct>=0.05){dec="WATCH"; cls="watch";}
+  document.getElementById('out').innerHTML = '<h2 class="'+cls+'">'+dec+'</h2><div>Fine g: '+fine.toFixed(3)+' · Melt $'+melt.toFixed(0)+' · Net $'+net.toFixed(0)+'</div><h2>Max hammer $'+max.toFixed(0)+'</h2><div>Landed $'+landed.toFixed(0)+' · edge $'+edge.toFixed(0)+' ('+(pct*100).toFixed(1)+'%)</div>';
+}
+run();
+</script>
+</body>
+</html>
